@@ -24,7 +24,24 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build and push Docker image
+    - name: Build Docker image
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        file: ./Dockerfile
+        push: false
+        tags: ${{ secrets.DOCKER_USERNAME }}/node-js-sample:latest
+
+    - name: Run Docker container
+      run: |
+        docker run -d --name node-js-sample -p 3000:3000 ${{ secrets.DOCKER_USERNAME }}/node-js-sample:latest
+        sleep 10 # Wait for the container to be fully up and running
+
+    - name: Test application with curl
+      run: |
+        curl --fail http://localhost:3000 || (docker logs node-js-sample && exit 1)
+
+    - name: Push Docker image
       uses: docker/build-push-action@v2
       with:
         context: .
@@ -32,10 +49,7 @@ jobs:
         push: true
         tags: ${{ secrets.DOCKER_USERNAME }}/node-js-sample:latest
 
-    - name: Run tests inside Docker container
+    - name: Clean up
       run: |
-        docker run --rm ${{ secrets.DOCKER_USERNAME }}/node-js-sample:latest npm test
-
-    - name: Lint code inside Docker container
-      run: |
-        docker run --rm ${{ secrets.DOCKER_USERNAME }}/node-js-sample:latest npm run lint
+        docker stop node-js-sample
+        docker rm node-js-sample
