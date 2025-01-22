@@ -34,7 +34,7 @@ jobs:
 
     - name: Run Docker container
       run: |
-        docker run -d --name node-js-sample -p 3000:3000 ${{ secrets.DOCKER_USERNAME }}/node-js-sample:latest
+        docker run -d --name node-js-sample -p 3000:8080 ${{ secrets.DOCKER_USERNAME }}/node-js-sample:latest
         sleep 10 # Wait for the container to be fully up and running
 
     - name: Test application with curl
